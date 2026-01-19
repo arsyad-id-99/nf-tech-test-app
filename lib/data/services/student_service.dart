@@ -1,29 +1,61 @@
-import '../models/student_model.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/rendering.dart';
+import 'package:nf_tech_test_app/common/constants.dart';
+import 'package:nf_tech_test_app/data/models/student_model.dart';
 
 class StudentService {
-  Future<List<Student>> getStudents() async {
-    // Simulasi delay jaringan selama 2 detik
-    await Future.delayed(const Duration(seconds: 2));
+  final Dio _dio = Dio(BaseOptions(baseUrl: AppConstants.baseUrl));
 
-    return [
-      const Student(
-        id: '1',
-        fullName: 'Budi Santoso',
-        nisn: '0012345',
-        major: '10-A',
-      ),
-      const Student(
-        id: '2',
-        fullName: 'Siti Aminah',
-        nisn: '0012346',
-        major: '11-B',
-      ),
-      const Student(
-        id: '3',
-        fullName: 'Andi Wijaya',
-        nisn: '0012347',
-        major: '10-A',
-      ),
-    ];
+  Future<Map<String, dynamic>> fetchStudents({
+    String? search,
+    String? jurusan,
+    int page = 1,
+    required String token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/student',
+        queryParameters: {
+          if (search != null && search.isNotEmpty) 'search': search,
+          if (jurusan != null && jurusan != 'Semua') 'jurusan': jurusan,
+          'page': page,
+          'limit': 10,
+        },
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      debugPrint(response.toString());
+      return response.data;
+    } catch (e) {
+      debugPrint(e.toString());
+      throw 'Gagal mengambil data siswa';
+    }
+  }
+
+  Future<void> addStudent(
+    Map<String, dynamic> studentData,
+    String token,
+  ) async {
+    try {
+      await _dio.post(
+        '/student',
+        data: studentData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+    } on DioException catch (e) {
+      throw e.response?.data['message'] ?? 'Gagal menambah data siswa';
+    }
+  }
+
+  Future<Student> getStudentDetail(String nisn, String token) async {
+    try {
+      final response = await _dio.get(
+        '/student/$nisn',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      // Mengambil objek di dalam field 'data'
+      return Student.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      throw e.response?.data['message'] ?? 'Gagal memuat detail siswa';
+    }
   }
 }

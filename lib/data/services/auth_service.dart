@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:nf_tech_test_app/common/constants.dart';
 
 class AuthService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://nf-tech-test-api.vercel.app/api',
-      connectTimeout: const Duration(seconds: 5),
-      receiveTimeout: const Duration(seconds: 3),
+      baseUrl: AppConstants.baseUrl,
+      connectTimeout: AppConstants.connectTimeout,
+      receiveTimeout: AppConstants.receiveTimeout,
     ),
   );
 
@@ -17,10 +19,11 @@ class AuthService {
       );
       return response.data;
     } on DioException catch (e) {
+      debugPrint(e.toString());
       // Full Handling Error Dio
       if (e.response != null) {
         // Error dari Server (misal: 401 Unauthorized)
-        throw e.response?.data['message'] ?? 'Gagal login, periksa akun Anda';
+        throw e.response?.data['msg'] ?? 'Gagal login, periksa akun Anda';
       } else {
         // Error Jaringan atau Timeout
         throw 'Tidak ada koneksi internet';

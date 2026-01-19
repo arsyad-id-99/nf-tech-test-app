@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:nf_tech_test_app/data/services/auth_service.dart';
 import 'package:nf_tech_test_app/features/auth/auth_cubit.dart';
+import 'package:nf_tech_test_app/features/login/bloc/login_bloc.dart';
 import 'package:nf_tech_test_app/features/login/login_view.dart';
+import 'package:nf_tech_test_app/features/students/bloc/student_add_bloc.dart';
+import 'package:nf_tech_test_app/features/students/bloc/student_detail_bloc.dart';
 import 'package:nf_tech_test_app/features/students/student_add_form_view.dart';
 import 'package:nf_tech_test_app/features/students/student_detail_view.dart';
 import 'package:nf_tech_test_app/features/students/student_list_view.dart';
@@ -15,12 +20,12 @@ final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: const ColorScheme.light(
-    primary: Color(0xFF00458E), // Biru NF
+    primary: Color(0xFF00458E),
     onPrimary: Colors.white,
-    secondary: Color(0xFFFDB813), // Kuning NF
+    secondary: Color(0xFFFDB813),
     onSecondary: Colors.black,
     surface: Colors.white,
-    onSurface: Color(0xFF333333), // Teks Gelap
+    onSurface: Color(0xFF333333),
     error: Color(0xFFB00020),
   ),
   appBarTheme: const AppBarTheme(
@@ -41,13 +46,13 @@ final ThemeData darkTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: const ColorScheme.dark(
-    primary: Color(0xFF4A8FE7), // Biru yang lebih terang untuk aksesibilitas
+    primary: Color(0xFF4A8FE7),
     onPrimary: Colors.white,
-    secondary: Color(0xFFFDB813), // Tetap Kuning NF
+    secondary: Color(0xFFFDB813),
     onSecondary: Colors.black,
-    surface: Color(0xFF121212), // Latar belakang gelap standar
+    surface: Color(0xFF121212),
     onSurface: Colors.white,
-    primaryContainer: Color(0xFF002B5B), // Biru gelap untuk card/container
+    primaryContainer: Color(0xFF002B5B),
   ),
   scaffoldBackgroundColor: const Color(0xFF121212),
   appBarTheme: const AppBarTheme(
@@ -66,6 +71,7 @@ final ThemeData darkTheme = ThemeData(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await initializeDateFormatting('id_ID', null);
   final directory = await getApplicationDocumentsDirectory();
 
   HydratedBloc.storage = await HydratedStorage.build(
@@ -84,10 +90,12 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
-        BlocProvider(
-          create: (context) =>
-              StudentBloc(studentService)..add(FetchStudents()),
+        BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
+        BlocProvider<StudentAddBloc>(
+          create: (context) => StudentAddBloc(studentService),
         ),
+        BlocProvider(create: (context) => LoginBloc(AuthService())),
+        BlocProvider(create: (context) => StudentBloc(studentService)),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
@@ -99,11 +107,39 @@ class MyApp extends StatelessWidget {
             home: context.read<AuthCubit>().state.isAuthenticated
                 ? const StudentListView()
                 : const LoginView(),
-            routes: {
-              '/login': (context) => LoginView(),
-              '/list': (context) => const StudentListView(),
-              '/detail': (context) => const StudentDetailView(),
-              '/register': (context) => StudentAddFormView(),
+            onGenerateRoute: (settings) {
+              if (settings.name == '/detail') {
+                final nisn = settings.arguments as String;
+                final token = context.read<AuthCubit>().state.token!;
+
+                return MaterialPageRoute(
+                  builder: (context) {
+                    return BlocProvider(
+                      create: (context) =>
+                          StudentDetailBloc(StudentService())
+                            ..add(FetchStudentDetail(nisn, token)),
+                      child: StudentDetailView(nisn: nisn),
+                    );
+                  },
+                );
+              }
+
+              // Route lainnya...
+              if (settings.name == '/login') {
+                return MaterialPageRoute(builder: (_) => const LoginView());
+              }
+              if (settings.name == '/list') {
+                return MaterialPageRoute(
+                  builder: (_) => const StudentListView(),
+                );
+              }
+              if (settings.name == '/add') {
+                return MaterialPageRoute(
+                  builder: (_) => const StudentAddFormView(),
+                );
+              }
+
+              return null;
             },
           );
         },
