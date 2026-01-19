@@ -1,11 +1,15 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nf_tech_test_app/data/services/auth_service.dart';
+import 'package:nf_tech_test_app/data/services/notification_service.dart';
 import 'package:nf_tech_test_app/features/auth/auth_cubit.dart';
 import 'package:nf_tech_test_app/features/login/bloc/login_bloc.dart';
 import 'package:nf_tech_test_app/features/login/login_view.dart';
+import 'package:nf_tech_test_app/features/settings/setting_view.dart';
 import 'package:nf_tech_test_app/features/students/bloc/student_add_bloc.dart';
 import 'package:nf_tech_test_app/features/students/bloc/student_detail_bloc.dart';
 import 'package:nf_tech_test_app/features/students/student_add_form_view.dart';
@@ -15,6 +19,8 @@ import 'package:nf_tech_test_app/features/theme/theme_cubit.dart';
 import 'package:path_provider/path_provider.dart';
 import 'data/services/student_service.dart';
 import 'features/students/bloc/student_bloc.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
@@ -68,8 +74,19 @@ final ThemeData darkTheme = ThemeData(
   ),
 );
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Menangani pesan background: ${message.messageId}");
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Inisialisasi Service Notifikasi
+  await NotificationService().initNotification();
 
   await initializeDateFormatting('id_ID', null);
   final directory = await getApplicationDocumentsDirectory();
@@ -101,6 +118,7 @@ class MyApp extends StatelessWidget {
         builder: (context, themeMode) {
           return MaterialApp(
             title: 'NF Tech Test App',
+            navigatorKey: navigatorKey,
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeMode,
@@ -124,7 +142,6 @@ class MyApp extends StatelessWidget {
                 );
               }
 
-              // Route lainnya...
               if (settings.name == '/login') {
                 return MaterialPageRoute(builder: (_) => const LoginView());
               }
@@ -137,6 +154,9 @@ class MyApp extends StatelessWidget {
                 return MaterialPageRoute(
                   builder: (_) => const StudentAddFormView(),
                 );
+              }
+              if (settings.name == '/settings') {
+                return MaterialPageRoute(builder: (_) => const SettingsView());
               }
 
               return null;

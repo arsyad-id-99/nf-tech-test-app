@@ -41,6 +41,9 @@ dependencies:
   dio: ^5.9.0
   intl: ^0.20.2
   shimmer: ^3.0.0
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
+  flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
   flutter_test:

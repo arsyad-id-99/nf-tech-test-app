@@ -34,12 +34,56 @@ class _StudentAddFormViewState extends State<StudentAddFormView> {
     }
   }
 
+  // Helper function untuk menampilkan dialog loading
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const PopScope(
+          canPop: false,
+          child: Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text("Menyimpan data siswa..."),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Tambah Siswa Baru")),
       body: BlocListener<StudentAddBloc, StudentAddState>(
+        listenWhen: (previous, current) =>
+            previous.isLoading != current.isLoading ||
+            previous.isSuccess != current.isSuccess ||
+            previous.error != current.error,
         listener: (context, state) {
+          // 1. Jika state berubah menjadi loading, tampilkan popup
+          if (state.isLoading) {
+            _showLoadingDialog(context);
+          }
+
+          // 2. Jika proses selesai (Sukses atau Error), tutup popup
+          if (!state.isLoading && (state.isSuccess || state.error != null)) {
+            // Menutup dialog loading
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+
+          // 3. Aksi lanjutan setelah popup ditutup
           if (state.isSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -47,8 +91,14 @@ class _StudentAddFormViewState extends State<StudentAddFormView> {
                 backgroundColor: Colors.green,
               ),
             );
-
-            Navigator.pop(context, true);
+            Navigator.pop(context, true); // Kembali ke halaman List
+          } else if (state.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error!),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         child: Form(

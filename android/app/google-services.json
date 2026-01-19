@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "30963745618",
+    "project_id": "nf-tech-test-app",
+    "storage_bucket": "nf-tech-test-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:30963745618:android:95cbb09ea967614d43f08b",
+        "android_client_info": {
+          "package_name": "com.nf.tech.test.app.nf_tech_test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhyXo1MHQCnnA_aTaYj5xj4L6OAJ0vxtE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

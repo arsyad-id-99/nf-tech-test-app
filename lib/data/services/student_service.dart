@@ -52,7 +52,6 @@ class StudentService {
         '/student/$nisn',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      // Mengambil objek di dalam field 'data'
       return Student.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw e.response?.data['message'] ?? 'Gagal memuat detail siswa';

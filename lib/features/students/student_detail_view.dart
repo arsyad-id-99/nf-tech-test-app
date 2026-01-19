@@ -112,6 +112,7 @@ class StudentDetailView extends StatelessWidget {
     return Column(
       children: [
         ListTile(
+          dense: true,
           leading: Icon(icon, color: theme.colorScheme.primary),
           title: Text(
             label,

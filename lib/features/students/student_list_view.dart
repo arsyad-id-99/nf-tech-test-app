@@ -18,7 +18,7 @@ class StudentListView extends StatefulWidget {
 class _StudentListViewState extends State<StudentListView> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-  String _selectedJurusan = 'Semua';
+  String _selectedJurusan = 'Semua Jurusan';
 
   @override
   void initState() {
@@ -40,21 +40,31 @@ class _StudentListViewState extends State<StudentListView> {
     final authState = context.read<AuthCubit>().state;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Daftar Siswa NF")),
+      appBar: AppBar(
+        title: const Text("Daftar Siswa Nurul Fikri"),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Pengaturan',
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings');
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Column(
         children: [
-          // 1. Search & Filter: Tetap muncul di paling atas
           _buildSearchAndFilter(authState.token!),
 
           Expanded(
             child: BlocBuilder<StudentBloc, StudentState>(
               builder: (context, state) {
-                // 3. Loading awal menggunakan Shimmer
                 if (state.isLoading) {
                   return _buildShimmerLoading();
                 }
 
-                // 2. Placeholder terpusat (Satu widget untuk dua kondisi)
                 if (state.students.isEmpty) {
                   return _buildEmptyState(
                     isSearching:
@@ -106,51 +116,53 @@ class _StudentListViewState extends State<StudentListView> {
   Widget _buildSearchAndFilter(String token) {
     return Padding(
       padding: const EdgeInsets.all(12.0),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                hintText: "Cari Nama/NISN...",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              ),
-              onSubmitted: (value) {
-                context.read<StudentBloc>().add(
-                  FetchStudents(
-                    search: value,
-                    jurusan: _selectedJurusan,
-                    token: token,
-                  ),
-                );
-              },
+          TextField(
+            controller: _searchController,
+            decoration: const InputDecoration(
+              hintText: "Cari Nama/NISN...",
+              prefixIcon: Icon(Icons.search),
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12),
             ),
+            onSubmitted: (value) {
+              context.read<StudentBloc>().add(
+                FetchStudents(
+                  search: value,
+                  jurusan: _selectedJurusan,
+                  token: token,
+                ),
+              );
+            },
           ),
-          const SizedBox(width: 8),
+
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: DropdownButton<String>(
-              value: _selectedJurusan,
-              underline: const SizedBox(),
-              items: AppConstants.jurusanOptions
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                  .toList(),
-              onChanged: (val) {
-                setState(() => _selectedJurusan = val!);
-                context.read<StudentBloc>().add(
-                  FetchStudents(
-                    search: _searchController.text,
-                    jurusan: val!,
-                    token: token,
-                  ),
-                );
-              },
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                value: _selectedJurusan,
+                items: AppConstants.jurusanOptions
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (val) {
+                  setState(() => _selectedJurusan = val!);
+                  context.read<StudentBloc>().add(
+                    FetchStudents(
+                      search: _searchController.text,
+                      jurusan: val!,
+                      token: token,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -200,7 +212,7 @@ class _StudentListViewState extends State<StudentListView> {
           highlightColor: Colors.grey[100]!,
           child: Card(
             margin: const EdgeInsets.only(bottom: 12),
-            child: Container(height: 80, width: double.infinity),
+            child: SizedBox(height: 80, width: double.infinity),
           ),
         );
       },
@@ -214,7 +226,7 @@ class _StudentListViewState extends State<StudentListView> {
         leading: CircleAvatar(
           backgroundColor: Theme.of(
             context,
-          ).colorScheme.secondary.withOpacity(0.2),
+          ).colorScheme.secondary.withValues(alpha: .2),
           child: Icon(
             Icons.person,
             color: Theme.of(context).colorScheme.primary,
