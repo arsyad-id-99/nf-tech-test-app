@@ -117,7 +117,7 @@ class StudentBloc extends Bloc<StudentEvent, StudentState> {
     try {
       final res = await service.fetchStudents(
         search: event.search,
-        jurusan: event.jurusan,
+        jurusan: event.jurusan == "Semua Jurusan" ? '' : event.jurusan,
         page: 1,
         token: event.token,
       );
