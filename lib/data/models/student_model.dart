@@ -5,16 +5,16 @@ class Student extends Equatable {
   final String nisn;
   final String jurusan;
   final DateTime tanggalLahir;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   const Student({
     required this.namaLengkap,
     required this.nisn,
     required this.jurusan,
     required this.tanggalLahir,
-    required this.createdAt,
-    required this.updatedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -24,8 +24,12 @@ class Student extends Equatable {
       jurusan: json['jurusan'] ?? '',
       // Mengonversi string ISO8601 dari API menjadi objek DateTime
       tanggalLahir: DateTime.parse(json['tanggalLahir']),
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
+          : null,
     );
   }
 

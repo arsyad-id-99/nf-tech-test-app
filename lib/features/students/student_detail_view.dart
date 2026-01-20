@@ -87,13 +87,13 @@ class StudentDetailView extends StatelessWidget {
           _infoTile(
             Icons.event_available,
             "Terdaftar Pada",
-            _formatDate(student.createdAt),
+            _formatDate(student.createdAt!),
             theme,
           ),
           _infoTile(
             Icons.edit_calendar,
             "Terakhir Diperbarui",
-            _formatDate(student.updatedAt),
+            _formatDate(student.updatedAt!),
             theme,
             isLast: true,
           ),
