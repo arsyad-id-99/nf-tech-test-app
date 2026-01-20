@@ -1,6 +1,10 @@
 # NF Tech Test App 
 Aplikasi Manajemen Data Siswa yang dibangun dengan Flutter sebagai bagian dari technical test. Aplikasi ini mengimplementasikan fitur manajemen state tingkat lanjut, sinkronisasi offline, dan push notifikasi.
 
+## Kredensial Demo App
+* username : admin1/admin2/admin3
+* password : admin
+
 ## 🚀 Fitur Utama
 * **Manajemen Siswa**: Tambah dan lihat daftar siswa dengan antarmuka yang sederhana.
 * **Pencarian & Filter**: Filter berdasarkan jurusan dan pencarian nama secara real-time.
