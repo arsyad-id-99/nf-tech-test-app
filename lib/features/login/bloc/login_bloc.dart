@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:nf_tech_test_app/data/services/notification_service.dart';
 import '../../../data/services/auth_service.dart';
 
 // --- Events ---
@@ -42,7 +44,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmitted>((event, emit) async {
       emit(LoginLoading());
       try {
-        final data = await authService.login(event.username, event.password);
+        final deviceToken = await NotificationService().getDeviceToken();
+        debugPrint("Device Token: $deviceToken");
+        final data = await authService.login(
+          event.username,
+          event.password,
+          deviceToken,
+        );
         emit(LoginSuccess(data));
       } catch (e) {
         emit(LoginFailure(e.toString()));

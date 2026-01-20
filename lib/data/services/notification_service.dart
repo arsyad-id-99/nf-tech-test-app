@@ -43,6 +43,15 @@ class NotificationService {
     _initPushNotification();
   }
 
+  Future<String?> getDeviceToken() async {
+    try {
+      return await _fcm.getToken();
+    } catch (e) {
+      debugPrint("Error mengambil FCM Token: $e");
+      return null;
+    }
+  }
+
   void _initPushNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;

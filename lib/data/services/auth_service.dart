@@ -11,11 +11,19 @@ class AuthService {
     ),
   );
 
-  Future<Map<String, dynamic>> login(String username, String password) async {
+  Future<Map<String, dynamic>> login(
+    String username,
+    String password,
+    String? deviceToken,
+  ) async {
     try {
       final response = await _dio.post(
         '/auth/login',
-        data: {'username': username, 'password': password},
+        data: {
+          'username': username,
+          'password': password,
+          'deviceToken': deviceToken,
+        },
       );
       return response.data;
     } on DioException catch (e) {
