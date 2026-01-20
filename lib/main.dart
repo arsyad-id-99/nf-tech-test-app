@@ -124,6 +124,7 @@ class MyApp extends StatelessWidget {
         builder: (context, themeMode) {
           return MaterialApp(
             title: 'NF Tech Test App',
+            debugShowCheckedModeBanner: false,
             navigatorKey: navigatorKey,
             theme: lightTheme,
             darkTheme: darkTheme,

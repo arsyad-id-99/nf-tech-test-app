@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:label="nf_tech_test_app"
+        android:label="NF Tech Test App"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
