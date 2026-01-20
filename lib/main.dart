@@ -10,6 +10,7 @@ import 'package:nf_tech_test_app/features/auth/auth_cubit.dart';
 import 'package:nf_tech_test_app/features/login/bloc/login_bloc.dart';
 import 'package:nf_tech_test_app/features/login/login_view.dart';
 import 'package:nf_tech_test_app/features/settings/setting_view.dart';
+import 'package:nf_tech_test_app/features/students/bloc/offline_student_bloc.dart';
 import 'package:nf_tech_test_app/features/students/bloc/student_add_bloc.dart';
 import 'package:nf_tech_test_app/features/students/bloc/student_detail_bloc.dart';
 import 'package:nf_tech_test_app/features/students/student_add_form_view.dart';
@@ -108,8 +109,13 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider<ThemeCubit>(create: (context) => ThemeCubit()),
         BlocProvider<AuthCubit>(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => OfflineStudentBloc()),
+
         BlocProvider<StudentAddBloc>(
-          create: (context) => StudentAddBloc(studentService),
+          create: (context) => StudentAddBloc(
+            studentService,
+            context.read<OfflineStudentBloc>(),
+          ),
         ),
         BlocProvider(create: (context) => LoginBloc(AuthService())),
         BlocProvider(create: (context) => StudentBloc(studentService)),

@@ -42,7 +42,8 @@ class StudentService {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } on DioException catch (e) {
-      throw e.response?.data['message'] ?? 'Gagal menambah data siswa';
+      debugPrint(e.toString());
+      throw e.response?.data['message'] ?? e;
     }
   }
 

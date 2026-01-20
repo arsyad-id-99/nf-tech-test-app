@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:nf_tech_test_app/features/students/bloc/offline_student_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nf_tech_test_app/common/constants.dart';
 import 'package:nf_tech_test_app/data/services/student_service.dart';
@@ -19,6 +23,8 @@ class _StudentListViewState extends State<StudentListView> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
   String _selectedJurusan = 'Semua Jurusan';
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  bool _isSyncing = false;
 
   @override
   void initState() {
@@ -26,6 +32,14 @@ class _StudentListViewState extends State<StudentListView> {
     _scrollController.addListener(_onScroll);
     final authState = context.read<AuthCubit>().state;
     context.read<StudentBloc>().add(FetchStudents(token: authState.token!));
+
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) {
+      if (results.isNotEmpty && !results.contains(ConnectivityResult.none)) {
+        _syncDataOffline();
+      }
+    });
   }
 
   void _onScroll() {
@@ -33,6 +47,45 @@ class _StudentListViewState extends State<StudentListView> {
         _scrollController.position.maxScrollExtent * 0.9) {
       context.read<StudentBloc>().add(LoadMoreStudents());
     }
+  }
+
+  Future<void> _syncDataOffline() async {
+    if (_isSyncing) return;
+
+    final offlineBloc = context.read<OfflineStudentBloc>();
+    final pendingData = offlineBloc.state.pendingStudents;
+
+    if (pendingData.isEmpty) return;
+
+    setState(() => _isSyncing = true);
+
+    final service = StudentService();
+    final token = context.read<AuthCubit>().state.token!;
+
+    for (var student in List.from(pendingData)) {
+      try {
+        await service.addStudent(student, token);
+        if (mounted) {
+          offlineBloc.add(RemoveStudentFromQueue(student));
+        }
+      } catch (e) {
+        debugPrint("Gagal sinkron data: $e");
+        break;
+      }
+    }
+
+    if (mounted) {
+      setState(() => _isSyncing = false);
+      // 3. Pemicu: Refresh list otomatis setelah semua data tersinkron
+      context.read<StudentBloc>().add(FetchStudents(token: token));
+    }
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel(); // Jangan lupa batalkan subscription
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,6 +110,26 @@ class _StudentListViewState extends State<StudentListView> {
       body: Column(
         children: [
           _buildSearchAndFilter(authState.token!),
+          BlocBuilder<OfflineStudentBloc, OfflineStudentState>(
+            builder: (context, state) {
+              if (state.pendingStudents.isNotEmpty) {
+                return Container(
+                  color: Colors.orangeAccent,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  child: Text(
+                    "Menunggu Koneksi: ${state.pendingStudents.length} data belum tersinkron",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
 
           Expanded(
             child: BlocBuilder<StudentBloc, StudentState>(
